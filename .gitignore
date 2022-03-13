@@ -1,0 +1,8 @@
+*.exe
+*.dsym
+main
+**/.svn
+**/.hg
+**/CVS
+**/.DS_Store
+**/*.o
