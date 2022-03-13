@@ -13,14 +13,27 @@ int main() {
     InitWindow(windowWidth, windowHeight, "Dapper Dasher");
 
     // Acceleration due to gravity (pixels per frame, per frame)
-    const int gravity{1};
+    const int gravity{1'000};
 
-    // Rectangle Dimensions
-    const int width{50};
-    const int height{80};
-    int posY{windowHeight - height};
+    // Texture
+    Texture2D scarfy = LoadTexture("./textures/scarfy.png");
+    Rectangle scarfyRec;
+    scarfyRec.width = scarfy.width / 6;
+    scarfyRec.height = scarfy.height;
+    scarfyRec.x = 0;
+    scarfyRec.y = 0;
+    Vector2 scarfyPos;
+    scarfyPos.x = (windowWidth / 2) - (scarfyRec.width / 2);
+    scarfyPos.y = (windowHeight / 2) - (scarfyRec.height / 2);
+
+    // animation frame
+    int frame{};
+    const float updateTime{1.0 / 12.0};
+    float runningTime{};
+
     int velocity{0};
-    const int jumpVel{-22};
+    // jump velocity (pixels/second)
+    const int jumpVel{-600};
 
     SetTargetFPS(60);
 
@@ -28,27 +41,42 @@ int main() {
     while (!WindowShouldClose()) {
         BeginDrawing();
 
+        // deltatime (time since last frame)
+        const float dT{GetFrameTime()};
+
         // Perform ground check
-        if (isOnGround(posY, windowHeight - height)) {
+        if (isOnGround(scarfyPos.y, windowHeight - scarfyRec.width)) {
             // rectangle is on the ground
             velocity = 0;
         } else {
             // rectangle is in the air
             // Apply gravity
-            velocity += gravity;
+            velocity += gravity * dT;
         }
 
-        if (IsKeyPressed(KEY_SPACE) && isOnGround(posY, windowHeight - height)) {
+        if (IsKeyPressed(KEY_SPACE) && isOnGround(scarfyPos.y, windowHeight - scarfyRec.width)) {
             velocity += jumpVel;    
         }
         // Update Y Positions
-        posY += velocity;
+        scarfyPos.y += velocity * dT;
 
-        DrawRectangle(windowWidth / 2, posY, width, height, BLUE); 
+        // Update animation frame
+        runningTime += dT;
+        if (runningTime >= updateTime) {
+            runningTime = 0.0;
+            scarfyRec.x = frame * scarfyRec.width;
+            frame++;
+            if (frame > 5) {
+                frame = 0;
+            }
+        }
+
+        DrawTextureRec(scarfy, scarfyRec, scarfyPos, WHITE);
 
         ClearBackground(WHITE);
 
         EndDrawing();
     }
+    UnloadTexture(scarfy);
     CloseWindow();
 }
